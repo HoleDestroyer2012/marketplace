@@ -17,7 +17,6 @@ def add_ad(request):
 
     if serializer.is_valid():
         print(request)
-        # must add user!!!
         ad = Ad.objects.create(**data)
         res = AdSerializer(ad, many=False)
         return Response({'ad': res.data})
