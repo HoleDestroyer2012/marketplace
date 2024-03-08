@@ -1,14 +1,17 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
 
-from .serializers import AdSerializer
-from .models import Ad
+from .serializers import AdSerializer, AdImagesSerializer
+from .models import Ad, AdImages
 from .filters import AdFilters
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_ad(request):
 
     data = request.data
@@ -17,7 +20,7 @@ def add_ad(request):
 
     if serializer.is_valid():
         print(request)
-        ad = Ad.objects.create(**data)
+        ad = Ad.objects.create(**data, owner=request.user)
         res = AdSerializer(ad, many=False)
         return Response({'ad': res.data})
     else:
@@ -57,8 +60,47 @@ def get_all_ads(request):
         'ads': serializer.data,
     })
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_ad_images(request):
+    print(request.data)
+    data = request.data
+    files = request.FILES.getlist('images')
+
+    if 'ad' not in data:
+        return Response({'error': 'Missing or invaild field "ad" in data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    ad = get_object_or_404(Ad, id=data['ad'])
+
+    if ad.owner != request.user:
+        return Response({'error': 'You are not allowded to upload images to this add'}, status=status.HTTP_403_FORBIDDEN)
+
+    images = []
+
+    for f in files:
+        image = AdImages.objects.create(ad=ad, image=f)
+        images.append(image)
+
+    serializer = AdImagesSerializer(images, many=True)
+
+    return  Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def update_ad(request, pk):
 
+    data = request.data
     ad = get_object_or_404(Ad, id=pk)
 
+    #Check if user the same
+    if ad.owner != request.user:
+        return Response({'error': 'You can not update this ad'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = AdSerializer(ad, data=data, partial=True, many=False)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
