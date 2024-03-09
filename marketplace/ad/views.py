@@ -22,9 +22,9 @@ def add_ad(request):
         print(request)
         ad = Ad.objects.create(**data, owner=request.user)
         res = AdSerializer(ad, many=False)
-        return Response({'ad': res.data})
+        return Response({'ad': res.data}, status=status.HTTP_201_CREATED)
     else:
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -104,3 +104,23 @@ def update_ad(request, pk):
         return Response(serializer.data)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_ad(request, pk):
+    
+    ad = get_object_or_404(Ad, id=pk)
+
+    #Check if user is owner of this ad
+    if request.user != ad.owner:
+        return Response({'error': 'You can not delete this ad'}, status=status.HTTP_403_FORBIDDEN)
+
+    args = {'ad': pk}
+    images = AdImages.objects.filter(**args)
+    for i in images:
+        i.delete()
+
+    ad.delete()
+
+    return Response({'detail': 'Ad was succesfully deleted'}, status=status.HTTP_200_OK)

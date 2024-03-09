@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser, Profile
+from comment.serializers import CommentSerializer
 
 class ProfileSerializer(serializers.ModelSerializer):
 
@@ -33,12 +34,18 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer(required=False)
+    profile = ProfileSerializer(many=False, read_only=True)
+    comments = serializers.SerializerMethodField(method_name='get_comments', read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'groups', 'user_permissions', 'profile']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'groups', 'user_permissions', 'profile', 'comments']
         extra_kwargs = {
             'groups': {'required': False},
             'user_permissions': {'required': False},
         }
+
+    def get_comments(self, obj):
+        comments = obj.comments.all()
+        serializer = CommentSerializer(comments, many=True)
+        return serializer.data

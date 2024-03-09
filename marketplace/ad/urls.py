@@ -7,4 +7,5 @@ urlpatterns = [
     path('ads/', views.get_all_ads, name='get_all_ads'),
     path('upload_ad_images/', views.upload_ad_images, name='upload_ad_images'),
     path('update_ad/<str:pk>/', views.update_ad, name='update_ad'),
+    path('delete_ad/<str:pk>/', views.delete_ad, name='delete_ad'),
 ]
