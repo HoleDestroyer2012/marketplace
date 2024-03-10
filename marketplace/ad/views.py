@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
@@ -28,6 +28,7 @@ def add_ad(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_ad(request, pk):
 
     ad = get_object_or_404(Ad, id=pk)
@@ -40,7 +41,8 @@ def get_ad(request, pk):
 @api_view(['GET'])
 def get_all_ads(request):
 
-    filterset = AdFilters(request.GET, queryset=Ad.objects.all().order_by('id'))
+    filterset = AdFilters(
+        request.GET, queryset=Ad.objects.all().order_by('id'))
 
     count = filterset.qs.count()
 
@@ -84,7 +86,7 @@ def upload_ad_images(request):
 
     serializer = AdImagesSerializer(images, many=True)
 
-    return  Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['PATCH'])
@@ -94,7 +96,7 @@ def update_ad(request, pk):
     data = request.data
     ad = get_object_or_404(Ad, id=pk)
 
-    #Check if user the same
+    # Check if user the same
     if ad.owner != request.user:
         return Response({'error': 'You can not update this ad'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -109,10 +111,10 @@ def update_ad(request, pk):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_ad(request, pk):
-    
+
     ad = get_object_or_404(Ad, id=pk)
 
-    #Check if user is owner of this ad
+    # Check if user is owner of this ad
     if request.user != ad.owner:
         return Response({'error': 'You can not delete this ad'}, status=status.HTTP_403_FORBIDDEN)
 

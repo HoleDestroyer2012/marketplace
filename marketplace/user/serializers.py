@@ -1,12 +1,15 @@
 from rest_framework import serializers
 from .models import CustomUser, Profile
 from comment.serializers import CommentSerializer
+from ad.serializers import AdSerializer
+
 
 class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
         fields = '__all__'
+
 
 class SignUpSerializer(serializers.ModelSerializer):
 
@@ -32,14 +35,17 @@ class ResetPasswordSerializer(serializers.Serializer):
         return data
 
 
-
 class CustomUserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(many=False, read_only=True)
-    comments = serializers.SerializerMethodField(method_name='get_comments', read_only=True)
+    comments = serializers.SerializerMethodField(
+        method_name='get_comments', read_only=True)
+    ads = serializers.SerializerMethodField(
+        method_name='get_ads', read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'groups', 'user_permissions', 'profile', 'comments']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name',
+                  'role', 'groups', 'user_permissions', 'profile', 'ads', 'comments']
         extra_kwargs = {
             'groups': {'required': False},
             'user_permissions': {'required': False},
@@ -48,4 +54,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def get_comments(self, obj):
         comments = obj.comments.all()
         serializer = CommentSerializer(comments, many=True)
+        return serializer.data
+
+    def get_ads(self, obj):
+        ads = obj.ads.all()
+        serializer = AdSerializer(ads, many=True)
         return serializer.data

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -19,6 +19,10 @@ def create_comment(request):
     print(user)
     ad = get_object_or_404(Ad, id=data['ad'])
 
+    if ad.owner == request.user:
+        raise PermissionDenied(
+            'You cant add comment under your ad')
+
     exist_comment = Comment.objects.filter(ad=ad, user=user).exists()
     if exist_comment:
         raise PermissionDenied(
@@ -36,6 +40,7 @@ def create_comment(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_comment(request, comment_pk):
 
     comment = get_object_or_404(Comment, id=comment_pk)

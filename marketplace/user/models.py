@@ -13,6 +13,7 @@ class UserRoles(models.TextChoices):
 
 class CustomUser(AbstractUser):
     role = models.CharField(max_length=20, choices=UserRoles.choices, default=UserRoles.USER)
+    is_banned = models.BooleanField(default=False)
 
     groups = models.ManyToManyField(
         'auth.Group',

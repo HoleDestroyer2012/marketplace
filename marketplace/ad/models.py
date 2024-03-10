@@ -28,7 +28,7 @@ class Ad(models.Model):
     category = models.CharField(max_length=30, choices=Category.choices, default=Category.OTHER)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    owner = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    owner = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name='ads')
 
     def __str__(self):
         return self.title

@@ -109,7 +109,11 @@ REST_FRAMEWORK = {
     # 'EXCEPTION_HANDLER': 'utils.custom_exception_handler.custom_exception_handler',
      'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+     'DEFAULT_PERMISSION_CLASSES': [
+        'user.permissions.IsModer',
+        'user.permissions.NotBanned',
+    ],
 }
 
 SIMPLE_JWT = {
