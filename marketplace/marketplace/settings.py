@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import dotenv
 import os
-from datetime import timedelta
+from datetime import timedelta 
 
 dotenv.read_dotenv()
 
@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,9 +47,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
+
+    'channels',
     'ad.apps.AdConfig',
     'user.apps.UserConfig',
     'comment.apps.CommentConfig',
+    'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +65,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
@@ -88,7 +92,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'marketplace.wsgi.application'
+# WSGI_APPLICATION = 'marketplace.wsgi.application'
+ASGI_APPLICATION = 'marketplace.asgi.application'
 
 
 # Database
@@ -107,10 +112,10 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     # 'EXCEPTION_HANDLER': 'utils.custom_exception_handler.custom_exception_handler',
-     'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-     'DEFAULT_PERMISSION_CLASSES': [
+    'DEFAULT_PERMISSION_CLASSES': [
         'user.permissions.IsModer',
         'user.permissions.NotBanned',
     ],
